@@ -112,16 +112,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (data.user) {
         if (data.session) {
-          // Auto-confirmed or confirmations off
-          await fetchProfileAndSetUser(data.session);
-          return { success: true };
-        } else {
-          // Confirmation email sent
-          return {
-            success: true,
-            needsConfirmation: true,
-          };
+          await supabase.auth.signOut();
         }
+        return {
+          success: true,
+          needsConfirmation: true,
+        };
       }
       return { success: false, error: 'Không thể tạo tài khoản.' };
     } catch (err: unknown) {
@@ -204,7 +200,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { success: false, error: error.message };
       }
       if (data.session) {
-        await fetchProfileAndSetUser(data.session);
+        await supabase.auth.signOut();
       }
       return { success: true };
     } catch (err: unknown) {

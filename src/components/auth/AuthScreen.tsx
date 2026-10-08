@@ -7,21 +7,18 @@ import {
   ArrowRight, 
   ShieldCheck, 
   Check, 
-  AlertCircle, 
-  KeyRound,
-  RotateCcw,
-  Sparkles
+  AlertCircle
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { supabase } from '../../lib/supabase';
+import { EmailVerificationScreen } from './EmailVerificationScreen';
 
 export const AuthScreen: React.FC = () => {
   const { 
     signIn, 
     signUp, 
     resetPasswordForEmail, 
-    updatePassword, 
-    verifyOtp, 
-    resendConfirmationEmail 
+    updatePassword 
   } = useAuth();
 
   const [mode, setMode] = useState<'signin' | 'signup' | 'forgot' | 'verify_otp' | 'new_password'>('signin');
@@ -31,7 +28,7 @@ export const AuthScreen: React.FC = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [fullName, setFullName] = useState('');
-  const [otpCode, setOtpCode] = useState('');
+  const [registeredEmail, setRegisteredEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
 
   // Status
@@ -59,7 +56,7 @@ export const AuthScreen: React.FC = () => {
 
     if (!res.success) {
       if (res.error?.includes('Email not confirmed')) {
-        setErrorMsg('Email của bạn chưa được xác nhận. Vui lòng kiểm tra hộp thư hoặc nhập mã xác nhận bên dưới.');
+        setRegisteredEmail(email.trim());
         setMode('verify_otp');
       } else if (res.error?.includes('Invalid login credentials')) {
         setErrorMsg('Email hoặc mật khẩu không chính xác.');
@@ -95,14 +92,16 @@ export const AuthScreen: React.FC = () => {
     setLoading(false);
 
     if (res.success) {
-      if (res.needsConfirmation) {
-        setSuccessMsg('Đăng ký thành công! Vui lòng kiểm tra hộp thư đến (hoặc hòm thư Spam) để xác thực tài khoản.');
-        setMode('verify_otp');
-      } else {
-        setSuccessMsg('Đăng ký tài khoản thành công!');
-      }
+      setRegisteredEmail(email.trim());
+      // Sign out session if auto-logged in, so user stays on the verification screen
+      await supabase.auth.signOut();
+      setMode('verify_otp');
     } else {
-      setErrorMsg(res.error || 'Đăng ký tài khoản thất bại.');
+      if (res.error?.includes('already registered') || res.error?.includes('User already registered')) {
+        setErrorMsg('Email này đã được đăng ký. Vui lòng đăng nhập hoặc xác thực tài khoản.');
+      } else {
+        setErrorMsg(res.error || 'Đăng ký tài khoản thất bại.');
+      }
     }
   };
 
@@ -126,39 +125,6 @@ export const AuthScreen: React.FC = () => {
     }
   };
 
-  const handleVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    clearStatus();
-
-    if (!otpCode.trim()) {
-      setErrorMsg('Vui lòng nhập mã OTP hoặc mã xác nhận từ email.');
-      return;
-    }
-
-    setLoading(true);
-    const res = await verifyOtp(email, otpCode);
-    setLoading(false);
-
-    if (res.success) {
-      setSuccessMsg('Xác nhận thành công! Đang chuyển hướng...');
-    } else {
-      setErrorMsg(res.error || 'Mã xác nhận không hợp lệ hoặc đã hết hạn.');
-    }
-  };
-
-  const handleResend = async () => {
-    if (!email) return;
-    setLoading(true);
-    clearStatus();
-    const res = await resendConfirmationEmail(email);
-    setLoading(false);
-    if (res.success) {
-      setSuccessMsg('Đã gửi lại email xác nhận!');
-    } else {
-      setErrorMsg(res.error || 'Gửi lại thất bại.');
-    }
-  };
-
   const handleSetNewPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     clearStatus();
@@ -173,12 +139,27 @@ export const AuthScreen: React.FC = () => {
     setLoading(false);
 
     if (res.success) {
-      setSuccessMsg('Đổi mật khẩu thành công!');
+      setSuccessMsg('Đổi mật khẩu thành công! Vui lòng đăng nhập.');
       setMode('signin');
     } else {
       setErrorMsg(res.error || 'Cập nhật mật khẩu thất bại.');
     }
   };
+
+  // If in Verify OTP mode, render the dedicated EmailVerificationScreen
+  if (mode === 'verify_otp') {
+    return (
+      <EmailVerificationScreen
+        email={registeredEmail || email}
+        onBackToLogin={(em) => {
+          if (em) setEmail(em);
+          setPassword('');
+          clearStatus();
+          setMode('signin');
+        }}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-neutral-900 flex items-center justify-center p-4 sm:p-6 selection:bg-emerald-500 selection:text-white">
@@ -390,7 +371,7 @@ export const AuthScreen: React.FC = () => {
                 className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl shadow-xs transition-colors cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50 mt-2"
               >
                 {loading ? (
-                  <span>Đang tạo tài khoản...</span>
+                  <span>Đang xử lý...</span>
                 ) : (
                   <>
                     <span>Đăng ký tài khoản</span>
@@ -446,65 +427,6 @@ export const AuthScreen: React.FC = () => {
               >
                 ← Quay lại đăng nhập
               </button>
-            </form>
-          )}
-
-          {/* Form: Verify OTP / Email Confirmation */}
-          {mode === 'verify_otp' && (
-            <form onSubmit={handleVerifyOtp} className="space-y-4">
-              <div className="text-center pb-1">
-                <div className="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto mb-2">
-                  <KeyRound size={20} />
-                </div>
-                <h3 className="text-sm font-bold text-neutral-900">Xác thực tài khoản Email</h3>
-                <p className="text-xs text-neutral-500 mt-1">
-                  Nhập mã 6 chữ số hoặc mã xác nhận được gửi tới <strong>{email}</strong>
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-neutral-700 uppercase tracking-wider mb-1.5">
-                  Mã OTP xác nhận
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="123456"
-                  value={otpCode}
-                  onChange={(e) => setOtpCode(e.target.value)}
-                  className="w-full text-center text-lg tracking-widest font-mono py-2.5 bg-neutral-50/70 border border-neutral-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl shadow-xs transition-colors cursor-pointer disabled:opacity-50"
-              >
-                {loading ? 'Đang kiểm tra...' : 'Xác thực & Vào ứng dụng'}
-              </button>
-
-              <div className="flex items-center justify-between text-xs pt-1">
-                <button
-                  type="button"
-                  onClick={handleResend}
-                  disabled={loading}
-                  className="text-emerald-700 hover:underline cursor-pointer flex items-center gap-1"
-                >
-                  <RotateCcw size={12} />
-                  <span>Gửi lại mã</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMode('signin');
-                    clearStatus();
-                  }}
-                  className="text-neutral-500 hover:text-neutral-900 cursor-pointer"
-                >
-                  Quay lại đăng nhập
-                </button>
-              </div>
             </form>
           )}
 
