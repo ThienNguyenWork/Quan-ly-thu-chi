@@ -24,15 +24,15 @@ export const CategoriesPage: React.FC = () => {
     try {
       const groups = await financeService.getCategoryGroups(user.id);
       setCategories(groups);
-      if (groups.length > 0 && !selectedParentId) {
-        setSelectedParentId(groups[0].id || '');
+      if (groups.length > 0) {
+        setSelectedParentId((prev) => (prev ? prev : (groups[0].id || '')));
       }
     } catch (err) {
       console.error('Error loading categories:', err);
     } finally {
       setLoading(false);
     }
-  }, [user, selectedParentId]);
+  }, [user]);
 
   useEffect(() => {
     loadCategories();

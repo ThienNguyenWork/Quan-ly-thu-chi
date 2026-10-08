@@ -17,105 +17,195 @@ import {
 } from '../constants/categories';
 import { formatDateWithDayVI } from '../utils/formatters';
 
+// In-memory Promise lock per user to prevent concurrent initialization race conditions
+const userInitLocks = new Map<string, Promise<void>>();
+
 export const financeService = {
   /**
    * Initializes profile, default payment methods, and default categories
    * for a newly registered or first-time user.
+   * Safe against multiple simultaneous calls (locks per user) and idempotent.
    */
-  async initUserData(userId: string, email: string, fullName: string) {
-    try {
-      // 1. Ensure Profile
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('id', userId)
-        .maybeSingle();
+  async initUserData(userId: string, email: string, fullName: string): Promise<void> {
+    if (!userId) return;
 
-      if (!profile) {
-        await supabase.from('profiles').upsert({
-          id: userId,
-          full_name: fullName || email.split('@')[0] || 'Người dùng',
-          currency: 'VND',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        });
-      }
+    // 1. In-memory lock: if an initialization is already in flight for this user, reuse its promise
+    const existingLock = userInitLocks.get(userId);
+    if (existingLock) {
+      return existingLock;
+    }
 
-      // 2. Ensure Payment Methods
-      const { data: existingPMs } = await supabase
-        .from('payment_methods')
-        .select('id')
-        .eq('user_id', userId)
-        .limit(1);
+    const initPromise = (async () => {
+      try {
+        // 1. Ensure Profile
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('id', userId)
+          .maybeSingle();
 
-      if (!existingPMs || existingPMs.length === 0) {
+        if (!profile) {
+          await supabase.from('profiles').upsert({
+            id: userId,
+            full_name: fullName || email.split('@')[0] || 'Người dùng',
+            currency: 'VND',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          });
+        }
+
+        // 2. Ensure Payment Methods (Idempotent per method name)
+        const { data: existingPMs } = await supabase
+          .from('payment_methods')
+          .select('id, name')
+          .eq('user_id', userId);
+
+        const existingPMNames = new Set(
+          (existingPMs || []).map((pm: any) => (pm.name || '').trim().toLowerCase())
+        );
+
         const defaultMethods = ['Tiền mặt', 'Chuyển khoản', 'Thẻ ngân hàng', 'Ví điện tử'];
-        const pmsToInsert = defaultMethods.map((name) => ({
-          user_id: userId,
-          name,
-          icon: null,
-          is_default: true,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        }));
-        await supabase.from('payment_methods').insert(pmsToInsert);
-      }
+        const pmsToInsert = defaultMethods
+          .filter((name) => !existingPMNames.has(name.trim().toLowerCase()))
+          .map((name) => ({
+            user_id: userId,
+            name,
+            icon: null,
+            is_default: true,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          }));
 
-      // 3. Ensure Categories
-      const { data: existingCats } = await supabase
-        .from('categories')
-        .select('id')
-        .eq('user_id', userId)
-        .limit(1);
+        if (pmsToInsert.length > 0) {
+          await supabase.from('payment_methods').insert(pmsToInsert);
+        }
 
-      if (!existingCats || existingCats.length === 0) {
-        // Insert Parent Categories first
-        for (const parent of DEFAULT_PARENT_CATEGORIES) {
-          const { data: insertedParent } = await supabase
-            .from('categories')
-            .insert({
-              user_id: userId,
-              name: parent.name,
-              parent_id: null,
-              icon: parent.icon,
-              is_default: true,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-            })
-            .select('id')
-            .single();
+        // 3. Ensure Categories (Strictly Idempotent per parent name and subcategory name)
+        // Fetch ALL existing categories for this user
+        const { data: existingCats } = await supabase
+          .from('categories')
+          .select('id, name, parent_id')
+          .eq('user_id', userId);
 
-          if (insertedParent && parent.subcategories.length > 0) {
-            const subcatsToInsert = parent.subcategories.map((subName) => ({
-              user_id: userId,
-              name: subName,
-              parent_id: insertedParent.id,
-              icon: null,
-              is_default: true,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-            }));
-            await supabase.from('categories').insert(subcatsToInsert);
+        const existingList = (existingCats || []) as DbCategory[];
+        const parentNameToId = new Map<string, string>();
+        const existingSubcatSet = new Set<string>(); // key: `${parentId}:${subName.toLowerCase()}`
+
+        for (const c of existingList) {
+          const normName = (c.name || '').trim().toLowerCase();
+          if (!c.parent_id) {
+            if (!parentNameToId.has(normName)) {
+              parentNameToId.set(normName, c.id);
+            }
+          } else {
+            existingSubcatSet.add(`${c.parent_id}:${normName}`);
           }
         }
+
+        // Iterate through default categories and only insert what doesn't already exist
+        for (const parent of DEFAULT_PARENT_CATEGORIES) {
+          const pNormName = parent.name.trim().toLowerCase();
+          let parentId = parentNameToId.get(pNormName);
+
+          // If parent category does not exist for this user, insert it
+          if (!parentId) {
+            const { data: insertedParent, error: pError } = await supabase
+              .from('categories')
+              .insert({
+                user_id: userId,
+                name: parent.name.trim(),
+                parent_id: null,
+                icon: parent.icon,
+                is_default: true,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+              })
+              .select('id')
+              .single();
+
+            if (!pError && insertedParent && insertedParent.id) {
+              const newId = String(insertedParent.id);
+              parentId = newId;
+              parentNameToId.set(pNormName, newId);
+            }
+          }
+
+          // If parent exists (or was just created), check subcategories
+          if (parentId && parent.subcategories.length > 0) {
+            const subcatsToInsert: Array<{
+              user_id: string;
+              name: string;
+              parent_id: string;
+              icon: null;
+              is_default: boolean;
+              created_at: string;
+              updated_at: string;
+            }> = [];
+
+            for (const subName of parent.subcategories) {
+              const subNorm = subName.trim().toLowerCase();
+              const subKey = `${parentId}:${subNorm}`;
+
+              if (!existingSubcatSet.has(subKey)) {
+                subcatsToInsert.push({
+                  user_id: userId,
+                  name: subName.trim(),
+                  parent_id: parentId,
+                  icon: null,
+                  is_default: true,
+                  created_at: new Date().toISOString(),
+                  updated_at: new Date().toISOString(),
+                });
+                existingSubcatSet.add(subKey); // Track immediately to prevent duplicates within batch
+              }
+            }
+
+            if (subcatsToInsert.length > 0) {
+              await supabase.from('categories').insert(subcatsToInsert);
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Error in initUserData:', err);
+      } finally {
+        // Clear lock once complete
+        userInitLocks.delete(userId);
       }
-    } catch (err) {
-      console.error('Error in initUserData:', err);
-    }
+    })();
+
+    userInitLocks.set(userId, initPromise);
+    return initPromise;
   },
 
   /**
-   * Fetch payment methods from Supabase
+   * Fetch payment methods from Supabase for the current user.
+   * Scoped to user_id (with fallback to system defaults) and defensively deduplicated by name.
    */
   async getPaymentMethods(userId: string): Promise<DbPaymentMethod[]> {
-    const { data, error } = await supabase
+    let list: DbPaymentMethod[] = [];
+    const { data: userPMs, error: userErr } = await supabase
       .from('payment_methods')
       .select('*')
-      .or(`user_id.eq.${userId},is_default.eq.true`)
+      .eq('user_id', userId)
       .order('created_at', { ascending: true });
 
-    if (error || !data || data.length === 0) {
-      // Return defaults if none in DB
+    if (!userErr && userPMs && userPMs.length > 0) {
+      list = userPMs as DbPaymentMethod[];
+    } else {
+      // Fallback to global defaults if any exist with null user_id
+      const { data: sysPMs } = await supabase
+        .from('payment_methods')
+        .select('*')
+        .is('user_id', null)
+        .eq('is_default', true)
+        .order('created_at', { ascending: true });
+
+      if (sysPMs && sysPMs.length > 0) {
+        list = sysPMs as DbPaymentMethod[];
+      }
+    }
+
+    if (list.length === 0) {
       return [
         { id: 'pm-1', user_id: userId, name: 'Tiền mặt', icon: null, is_default: true, created_at: '' },
         { id: 'pm-2', user_id: userId, name: 'Chuyển khoản', icon: null, is_default: true, created_at: '' },
@@ -123,21 +213,53 @@ export const financeService = {
         { id: 'pm-4', user_id: userId, name: 'Ví điện tử', icon: null, is_default: true, created_at: '' },
       ];
     }
-    return data as DbPaymentMethod[];
+
+    // Defensive deduplication by name
+    const seenNames = new Set<string>();
+    const uniqueList: DbPaymentMethod[] = [];
+    for (const pm of list) {
+      const lower = (pm.name || '').trim().toLowerCase();
+      if (!seenNames.has(lower)) {
+        seenNames.add(lower);
+        uniqueList.push(pm);
+      }
+    }
+    return uniqueList;
   },
 
   /**
-   * Fetch categories from Supabase and group into Parent -> Subcategories
+   * Fetch categories from Supabase and group into Parent -> Subcategories.
+   * Scoped to user_id, preserves system defaults if user has none,
+   * and defensively consolidates duplicate parent/subcategory records.
    */
   async getCategoryGroups(userId: string): Promise<ParentCategoryGroup[]> {
-    const { data: allCategories, error } = await supabase
+    let allCategories: DbCategory[] = [];
+
+    // Prioritize categories belonging to the current user
+    const { data: userCats, error: userErr } = await supabase
       .from('categories')
       .select('*')
-      .or(`user_id.eq.${userId},is_default.eq.true`)
+      .eq('user_id', userId)
       .order('created_at', { ascending: true });
 
-    if (error || !allCategories || allCategories.length === 0) {
-      // Fallback to defaults
+    if (!userErr && userCats && userCats.length > 0) {
+      allCategories = userCats as DbCategory[];
+    } else {
+      // Check for global system default categories (user_id IS NULL)
+      const { data: sysCats } = await supabase
+        .from('categories')
+        .select('*')
+        .is('user_id', null)
+        .eq('is_default', true)
+        .order('created_at', { ascending: true });
+
+      if (sysCats && sysCats.length > 0) {
+        allCategories = sysCats as DbCategory[];
+      }
+    }
+
+    if (allCategories.length === 0) {
+      // Fallback to static defaults
       return DEFAULT_PARENT_CATEGORIES.map((p) => ({
         id: p.name,
         name: p.name,
@@ -150,16 +272,51 @@ export const financeService = {
     const parents = allCategories.filter((c: DbCategory) => !c.parent_id);
     const subcats = allCategories.filter((c: DbCategory) => !!c.parent_id);
 
-    return parents.map((p: DbCategory) => {
-      const children = subcats.filter((s: DbCategory) => s.parent_id === p.id);
-      return {
-        id: p.id,
-        name: p.name,
-        icon: p.icon || CATEGORY_ICONS[p.name] || 'Tag',
-        color: CATEGORY_COLORS[p.name] || '#64748B',
-        subcategories: children.map((c: DbCategory) => ({ id: c.id, name: c.name })),
-      };
-    });
+    // Defensive consolidation: Group parents by normalized name
+    const groupByName = new Map<string, ParentCategoryGroup>();
+    const parentNameToIds = new Map<string, Set<string>>();
+
+    for (const p of parents) {
+      const normName = (p.name || '').trim();
+      const lower = normName.toLowerCase();
+
+      if (!parentNameToIds.has(lower)) {
+        parentNameToIds.set(lower, new Set<string>());
+      }
+      parentNameToIds.get(lower)!.add(p.id);
+
+      if (!groupByName.has(lower)) {
+        groupByName.set(lower, {
+          id: p.id,
+          name: normName,
+          icon: p.icon || CATEGORY_ICONS[normName] || 'Tag',
+          color: CATEGORY_COLORS[normName] || '#64748B',
+          subcategories: [],
+        });
+      }
+    }
+
+    // Attach children to matching parent groups (handling any duplicate parent IDs)
+    for (const [lower, group] of groupByName.entries()) {
+      const matchingParentIds = parentNameToIds.get(lower) || new Set<string>();
+      const children = subcats.filter((s: DbCategory) => s.parent_id && matchingParentIds.has(s.parent_id));
+
+      const seenSubNames = new Set<string>();
+      const uniqueSubs: { id: string; name: string }[] = [];
+
+      for (const c of children) {
+        const subNorm = (c.name || '').trim();
+        const subLower = subNorm.toLowerCase();
+        if (!seenSubNames.has(subLower)) {
+          seenSubNames.add(subLower);
+          uniqueSubs.push({ id: c.id, name: subNorm });
+        }
+      }
+
+      group.subcategories = uniqueSubs;
+    }
+
+    return Array.from(groupByName.values());
   },
 
   /**
@@ -335,15 +492,28 @@ export const financeService = {
 
     // Resolve or lookup category_id if not provided
     if (!finalCategoryId && data.category_name) {
-      // Find subcategory or category with this name
+      // Find subcategory or category with this name belonging to this user
       const targetName = data.subcategory_name || data.category_name;
-      const { data: foundCat } = await supabase
+      let { data: foundCat } = await supabase
         .from('categories')
         .select('id')
-        .or(`user_id.eq.${userId},is_default.eq.true`)
+        .eq('user_id', userId)
         .eq('name', targetName)
         .limit(1)
         .maybeSingle();
+
+      if (!foundCat) {
+        // Fallback to global default category if any
+        const { data: sysCat } = await supabase
+          .from('categories')
+          .select('id')
+          .is('user_id', null)
+          .eq('is_default', true)
+          .eq('name', targetName)
+          .limit(1)
+          .maybeSingle();
+        foundCat = sysCat;
+      }
 
       if (foundCat) {
         finalCategoryId = foundCat.id;
@@ -352,13 +522,25 @@ export const financeService = {
 
     // Resolve payment_method_id if not provided
     if (!finalPaymentMethodId && data.payment_method_name) {
-      const { data: foundPM } = await supabase
+      let { data: foundPM } = await supabase
         .from('payment_methods')
         .select('id')
-        .or(`user_id.eq.${userId},is_default.eq.true`)
+        .eq('user_id', userId)
         .eq('name', data.payment_method_name)
         .limit(1)
         .maybeSingle();
+
+      if (!foundPM) {
+        const { data: sysPM } = await supabase
+          .from('payment_methods')
+          .select('id')
+          .is('user_id', null)
+          .eq('is_default', true)
+          .eq('name', data.payment_method_name)
+          .limit(1)
+          .maybeSingle();
+        foundPM = sysPM;
+      }
 
       if (foundPM) {
         finalPaymentMethodId = foundPM.id;
@@ -411,24 +593,50 @@ export const financeService = {
 
     if (!finalCategoryId && data.category_name) {
       const targetName = data.subcategory_name || data.category_name;
-      const { data: foundCat } = await supabase
+      let { data: foundCat } = await supabase
         .from('categories')
         .select('id')
-        .or(`user_id.eq.${userId},is_default.eq.true`)
+        .eq('user_id', userId)
         .eq('name', targetName)
         .limit(1)
         .maybeSingle();
+
+      if (!foundCat) {
+        const { data: sysCat } = await supabase
+          .from('categories')
+          .select('id')
+          .is('user_id', null)
+          .eq('is_default', true)
+          .eq('name', targetName)
+          .limit(1)
+          .maybeSingle();
+        foundCat = sysCat;
+      }
+
       if (foundCat) finalCategoryId = foundCat.id;
     }
 
     if (!finalPaymentMethodId && data.payment_method_name) {
-      const { data: foundPM } = await supabase
+      let { data: foundPM } = await supabase
         .from('payment_methods')
         .select('id')
-        .or(`user_id.eq.${userId},is_default.eq.true`)
+        .eq('user_id', userId)
         .eq('name', data.payment_method_name)
         .limit(1)
         .maybeSingle();
+
+      if (!foundPM) {
+        const { data: sysPM } = await supabase
+          .from('payment_methods')
+          .select('id')
+          .is('user_id', null)
+          .eq('is_default', true)
+          .eq('name', data.payment_method_name)
+          .limit(1)
+          .maybeSingle();
+        foundPM = sysPM;
+      }
+
       if (foundPM) finalPaymentMethodId = foundPM.id;
     }
 
