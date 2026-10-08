@@ -1,0 +1,6 @@
+{
+  "name": "Sổ Thu Chi Cá Nhân",
+  "description": "Ứng dụng quản lý thu nhập, chi tiêu cá nhân hiện đại và trực quan với Supabase và phân tích tài chính.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
