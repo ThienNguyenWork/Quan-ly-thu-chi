@@ -194,7 +194,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { data, error } = await supabase.auth.verifyOtp({
         email: email.trim(),
         token: token.trim(),
-        type: 'signup',
+        type: 'email',
       });
       if (error) {
         return { success: false, error: error.message };
