@@ -90,7 +90,7 @@ export const MonthlySpendingChart: React.FC<MonthlySpendingChartProps> = ({
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {/* Toggle Thu nhập */}
           <button
             type="button"
@@ -101,7 +101,8 @@ export const MonthlySpendingChart: React.FC<MonthlySpendingChartProps> = ({
                 : 'bg-neutral-50 text-neutral-500 border-neutral-200'
             }`}
           >
-            {showIncome ? 'Hiển thị thu nhập: Bật' : 'Hiển thị thu nhập: Tắt'}
+            <span className="sm:hidden">{showIncome ? 'Thu nhập: Bật' : 'Thu nhập: Tắt'}</span>
+            <span className="hidden sm:inline">{showIncome ? 'Hiển thị thu nhập: Bật' : 'Hiển thị thu nhập: Tắt'}</span>
           </button>
 
           {/* Year selector segmented buttons */}

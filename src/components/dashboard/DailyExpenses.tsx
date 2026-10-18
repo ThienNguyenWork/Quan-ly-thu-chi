@@ -95,7 +95,7 @@ export const DailyExpenses: React.FC<DailyExpensesProps> = ({
                           {tx.description}
                         </p>
                       </div>
-                      <div className="flex items-center gap-1.5 text-xs text-neutral-500 truncate mt-0.5">
+                      <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-neutral-500 mt-0.5">
                         <span>{tx.category}</span>
                         {tx.subcategory && (
                           <>
@@ -105,13 +105,13 @@ export const DailyExpenses: React.FC<DailyExpensesProps> = ({
                         )}
                         <span aria-hidden="true">·</span>
                         <span className="flex items-center gap-1">
-                          <CreditCard size={11} className="text-neutral-400" />
-                          {tx.payment_method}
+                          <CreditCard size={11} className="text-neutral-400 shrink-0" />
+                          <span>{tx.payment_method}</span>
                         </span>
                         {tx.note && (
                           <>
                             <span aria-hidden="true">·</span>
-                            <span className="italic truncate max-w-xs">{tx.note}</span>
+                            <span className="italic truncate max-w-[150px] sm:max-w-xs">{tx.note}</span>
                           </>
                         )}
                       </div>
@@ -119,14 +119,14 @@ export const DailyExpenses: React.FC<DailyExpensesProps> = ({
                   </div>
 
                   {/* Right side: Amount and Hover Actions */}
-                  <div className="flex items-center gap-3 shrink-0 ml-4">
+                  <div className="flex items-center gap-2 sm:gap-3 shrink-0 ml-2 sm:ml-4">
                     <div className="text-right">
-                      <span className="text-sm font-bold text-rose-600 tabular-nums">
+                      <span className="text-xs sm:text-sm font-bold text-rose-600 tabular-nums whitespace-nowrap">
                         -{formatVND(tx.amount)}
                       </span>
                     </div>
 
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                    <div className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex items-center gap-1">
                       <button
                         type="button"
                         onClick={() => onEditExpense(tx)}

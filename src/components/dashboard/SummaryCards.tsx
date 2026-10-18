@@ -33,7 +33,7 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
         </div>
 
         <div className="flex items-baseline justify-between">
-          <div className="text-2xl font-bold text-neutral-900 tracking-tight tabular-nums">
+          <div className="text-xl sm:text-2xl font-bold text-neutral-900 tracking-tight tabular-nums truncate">
             {formatVND(stats.totalIncome)}
           </div>
         </div>
@@ -65,7 +65,7 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
         </div>
 
         <div className="flex items-baseline justify-between">
-          <div className="text-2xl font-bold text-neutral-900 tracking-tight tabular-nums">
+          <div className="text-xl sm:text-2xl font-bold text-neutral-900 tracking-tight tabular-nums truncate">
             {formatVND(stats.totalExpense)}
           </div>
         </div>
@@ -100,7 +100,7 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
 
         <div className="flex items-baseline justify-between">
           <div
-            className={`text-2xl font-bold tracking-tight tabular-nums ${
+            className={`text-xl sm:text-2xl font-bold tracking-tight tabular-nums truncate ${
               stats.remainingBalance < 0 ? 'text-amber-600' : 'text-neutral-900'
             }`}
           >
@@ -128,8 +128,8 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
         </div>
 
         <div className="flex items-baseline justify-between">
-          <div className="text-2xl font-bold text-neutral-900 tracking-tight tabular-nums">
-            {stats.transactionCount} <span className="text-base font-normal text-neutral-500">giao dịch</span>
+          <div className="text-xl sm:text-2xl font-bold text-neutral-900 tracking-tight tabular-nums truncate">
+            {stats.transactionCount} <span className="text-xs sm:text-base font-normal text-neutral-500">giao dịch</span>
           </div>
         </div>
 

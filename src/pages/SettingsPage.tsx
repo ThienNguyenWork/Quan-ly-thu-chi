@@ -242,34 +242,34 @@ export const SettingsPage: React.FC<{ onRefreshNeeded: () => void }> = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
-          <div className="p-3 bg-neutral-50 rounded-xl border border-neutral-100">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 text-xs">
+          <div className="p-3 bg-neutral-50 rounded-xl border border-neutral-100 min-w-0">
             <span className="text-neutral-400 block text-[11px]">Bảng người dùng</span>
-            <span className="font-semibold text-neutral-800 font-mono">public.profiles</span>
+            <span className="font-semibold text-neutral-800 font-mono truncate block">public.profiles</span>
           </div>
-          <div className="p-3 bg-neutral-50 rounded-xl border border-neutral-100">
+          <div className="p-3 bg-neutral-50 rounded-xl border border-neutral-100 min-w-0">
             <span className="text-neutral-400 block text-[11px]">Bảng chi tiêu</span>
-            <span className="font-semibold text-neutral-800 font-mono">public.expenses</span>
+            <span className="font-semibold text-neutral-800 font-mono truncate block">public.expenses</span>
           </div>
-          <div className="p-3 bg-neutral-50 rounded-xl border border-neutral-100">
+          <div className="p-3 bg-neutral-50 rounded-xl border border-neutral-100 min-w-0">
             <span className="text-neutral-400 block text-[11px]">Bảng thu nhập</span>
-            <span className="font-semibold text-neutral-800 font-mono">public.incomes</span>
+            <span className="font-semibold text-neutral-800 font-mono truncate block">public.incomes</span>
           </div>
-          <div className="p-3 bg-neutral-50 rounded-xl border border-neutral-100">
+          <div className="p-3 bg-neutral-50 rounded-xl border border-neutral-100 min-w-0">
             <span className="text-neutral-400 block text-[11px]">Bảng danh mục</span>
-            <span className="font-semibold text-neutral-800 font-mono">public.categories</span>
+            <span className="font-semibold text-neutral-800 font-mono truncate block">public.categories</span>
           </div>
-          <div className="p-3 bg-neutral-50 rounded-xl border border-neutral-100">
+          <div className="p-3 bg-neutral-50 rounded-xl border border-neutral-100 min-w-0">
             <span className="text-neutral-400 block text-[11px]">Phương thức thanh toán</span>
-            <span className="font-semibold text-neutral-800 font-mono">public.payment_methods</span>
+            <span className="font-semibold text-neutral-800 font-mono truncate block">public.payment_methods</span>
           </div>
-          <div className="p-3 bg-neutral-50 rounded-xl border border-neutral-100">
+          <div className="p-3 bg-neutral-50 rounded-xl border border-neutral-100 min-w-0">
             <span className="text-neutral-400 block text-[11px]">Bảng ngân sách</span>
-            <span className="font-semibold text-neutral-800 font-mono">public.budgets</span>
+            <span className="font-semibold text-neutral-800 font-mono truncate block">public.budgets</span>
           </div>
         </div>
 
-        <div className="pt-3 border-t border-neutral-100 flex items-center justify-between">
+        <div className="pt-3 border-t border-neutral-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <p className="text-xs text-neutral-500">
             Mỗi người dùng chỉ có quyền đọc và ghi dữ liệu của chính mình thông qua quy tắc RLS (<code>auth.uid() = user_id</code>).
           </p>
@@ -277,7 +277,7 @@ export const SettingsPage: React.FC<{ onRefreshNeeded: () => void }> = () => {
           <button
             type="button"
             onClick={() => signOut()}
-            className="px-4 py-2 text-xs font-semibold text-rose-600 hover:text-rose-700 hover:bg-rose-50 border border-rose-200 rounded-xl transition-colors cursor-pointer flex items-center gap-1.5 shrink-0"
+            className="px-4 py-2 text-xs font-semibold text-rose-600 hover:text-rose-700 hover:bg-rose-50 border border-rose-200 rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-1.5 shrink-0"
           >
             <LogOut size={14} />
             <span>Đăng xuất tài khoản</span>

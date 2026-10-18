@@ -95,10 +95,10 @@ export const YearlyViewPage: React.FC<YearlyViewPageProps> = ({
             <span className="font-semibold uppercase tracking-wider">Tổng thu nhập cả năm</span>
             <ArrowUpRight size={16} className="text-emerald-600" />
           </div>
-          <div className="text-2xl font-bold text-neutral-900 tabular-nums">
+          <div className="text-xl sm:text-2xl font-bold text-neutral-900 tabular-nums truncate">
             {formatVND(totalIncome)}
           </div>
-          <div className="text-[11px] text-neutral-400 mt-2">
+          <div className="text-[11px] text-neutral-400 mt-2 truncate">
             Trung bình: {formatVND(totalIncome / 12)} / tháng
           </div>
         </div>
@@ -109,10 +109,10 @@ export const YearlyViewPage: React.FC<YearlyViewPageProps> = ({
             <span className="font-semibold uppercase tracking-wider">Tổng chi tiêu cả năm</span>
             <ArrowDownRight size={16} className="text-rose-600" />
           </div>
-          <div className="text-2xl font-bold text-neutral-900 tabular-nums">
+          <div className="text-xl sm:text-2xl font-bold text-neutral-900 tabular-nums truncate">
             {formatVND(totalExpense)}
           </div>
-          <div className="text-[11px] text-neutral-400 mt-2">
+          <div className="text-[11px] text-neutral-400 mt-2 truncate">
             Trung bình: {formatVND(totalExpense / 12)} / tháng
           </div>
         </div>
@@ -123,7 +123,7 @@ export const YearlyViewPage: React.FC<YearlyViewPageProps> = ({
             <span className="font-semibold uppercase tracking-wider">Tiền tích lũy còn lại</span>
             <Wallet size={16} className="text-sky-600" />
           </div>
-          <div className={`text-2xl font-bold tabular-nums ${totalRemaining < 0 ? 'text-amber-600' : 'text-neutral-900'}`}>
+          <div className={`text-xl sm:text-2xl font-bold tabular-nums truncate ${totalRemaining < 0 ? 'text-amber-600' : 'text-neutral-900'}`}>
             {formatVND(totalRemaining)}
           </div>
           <div className="text-[11px] text-neutral-400 mt-2">
@@ -137,10 +137,10 @@ export const YearlyViewPage: React.FC<YearlyViewPageProps> = ({
             <span className="font-semibold uppercase tracking-wider">Tháng chi tiêu cao nhất</span>
             <Flame size={16} className="text-rose-600" />
           </div>
-          <div className="text-2xl font-bold text-rose-700 tabular-nums">
+          <div className="text-xl sm:text-2xl font-bold text-rose-700 tabular-nums truncate">
             {hasExpenses ? highestExpensePoint.label : 'Chưa có'}
           </div>
-          <div className="text-[11px] text-rose-600 font-medium mt-2 tabular-nums">
+          <div className="text-[11px] text-rose-600 font-medium mt-2 tabular-nums truncate">
             {hasExpenses ? formatVND(highestExpensePoint.expense) : '0 ₫'}
           </div>
         </div>

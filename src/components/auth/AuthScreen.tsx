@@ -165,7 +165,7 @@ export const AuthScreen: React.FC = () => {
     <div className="min-h-screen bg-neutral-900 flex items-center justify-center p-4 sm:p-6 selection:bg-emerald-500 selection:text-white">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-neutral-100 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         {/* Brand & Header */}
-        <div className="p-6 sm:p-8 bg-neutral-950 text-white text-center border-b border-neutral-800">
+        <div className="p-5 sm:p-8 bg-neutral-950 text-white text-center border-b border-neutral-800">
           <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center mx-auto mb-3 shadow-lg shadow-emerald-900/30">
             <Wallet size={24} />
           </div>
@@ -178,7 +178,7 @@ export const AuthScreen: React.FC = () => {
 
           {/* Tab Selector */}
           {(mode === 'signin' || mode === 'signup') && (
-            <div className="grid grid-cols-2 bg-neutral-900 p-1 rounded-xl mt-6 border border-neutral-800">
+            <div className="grid grid-cols-2 bg-neutral-900 p-1 rounded-xl mt-5 sm:mt-6 border border-neutral-800">
               <button
                 type="button"
                 onClick={() => {
@@ -212,7 +212,7 @@ export const AuthScreen: React.FC = () => {
         </div>
 
         {/* Content Body */}
-        <div className="p-6 sm:p-8 space-y-5">
+        <div className="p-5 sm:p-8 space-y-4 sm:space-y-5">
           {errorMsg && (
             <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl flex items-start gap-2 animate-in fade-in">
               <AlertCircle size={16} className="shrink-0 mt-0.5" />

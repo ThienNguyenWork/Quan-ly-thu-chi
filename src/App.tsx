@@ -171,7 +171,7 @@ function MainApp() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-100/60 flex flex-col lg:flex-row text-neutral-900">
+    <div className="min-h-screen bg-neutral-100/60 flex flex-col lg:flex-row text-neutral-900 w-full max-w-full overflow-x-hidden">
       {/* Toast popup */}
       {toastMessage && (
         <div className="fixed top-5 right-5 z-50 bg-neutral-900 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-xl flex items-center gap-2 border border-neutral-700 animate-in fade-in slide-in-from-top-2">

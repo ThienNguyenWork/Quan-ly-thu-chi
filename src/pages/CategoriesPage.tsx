@@ -86,14 +86,14 @@ export const CategoriesPage: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
           <button
             type="button"
             onClick={() => {
               setIsAddingMainCat(!isAddingMainCat);
               setIsAddingSubcat(false);
             }}
-            className="px-3.5 py-2 bg-neutral-100 hover:bg-neutral-200 text-neutral-800 font-semibold text-xs rounded-xl transition-colors cursor-pointer flex items-center gap-1.5"
+            className="px-3 sm:px-3.5 py-2 bg-neutral-100 hover:bg-neutral-200 text-neutral-800 font-semibold text-xs rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-1.5 shrink-0"
           >
             <FolderPlus size={14} />
             <span>+ Thêm danh mục cha</span>
@@ -105,7 +105,7 @@ export const CategoriesPage: React.FC = () => {
               setIsAddingSubcat(!isAddingSubcat);
               setIsAddingMainCat(false);
             }}
-            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-xs transition-colors cursor-pointer flex items-center gap-1.5"
+            className="px-3.5 sm:px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-xs transition-colors cursor-pointer flex items-center justify-center gap-1.5 shrink-0"
           >
             <Plus size={15} />
             <span>+ Thêm danh mục con</span>

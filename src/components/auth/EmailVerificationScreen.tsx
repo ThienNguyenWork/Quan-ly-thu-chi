@@ -318,7 +318,7 @@ export const EmailVerificationScreen: React.FC<EmailVerificationScreenProps> = (
               </label>
 
               {/* 6 Individual Input Boxes */}
-              <div className="flex items-center justify-center gap-2 sm:gap-2.5">
+              <div className="flex items-center justify-center gap-1.5 sm:gap-2.5 max-w-sm mx-auto w-full px-1">
                 {digits.map((digit, idx) => (
                   <input
                     key={idx}
@@ -334,7 +334,7 @@ export const EmailVerificationScreen: React.FC<EmailVerificationScreenProps> = (
                     onChange={(e) => handleChange(idx, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(idx, e)}
                     onPaste={idx === 0 ? handlePaste : undefined}
-                    className={`w-11 h-13 sm:w-12 sm:h-14 text-center text-xl sm:text-2xl font-bold rounded-xl border tabular-nums transition-all outline-none ${
+                    className={`flex-1 min-w-0 max-w-[48px] h-12 sm:h-14 text-center text-lg sm:text-2xl font-bold rounded-xl border tabular-nums transition-all outline-none ${
                       digit
                         ? 'border-emerald-600 bg-emerald-50/40 text-neutral-900 shadow-xs'
                         : 'border-neutral-200 bg-neutral-50/70 text-neutral-900 hover:border-neutral-300'

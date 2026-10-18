@@ -110,8 +110,8 @@ export const ExpensesPage: React.FC<ExpensesPageProps> = ({
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="bg-rose-50 border border-rose-200/60 px-3.5 py-1.5 rounded-xl text-right">
+        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2.5 sm:gap-3">
+          <div className="bg-rose-50 border border-rose-200/60 px-3.5 py-1.5 rounded-xl text-left sm:text-right flex-1 sm:flex-initial">
             <span className="text-[11px] text-rose-600 font-medium block">Tổng theo bộ lọc:</span>
             <span className="text-sm font-bold text-rose-700 tabular-nums">
               {formatVND(totalFilteredExpense)}
@@ -121,7 +121,7 @@ export const ExpensesPage: React.FC<ExpensesPageProps> = ({
           <button
             type="button"
             onClick={onOpenAddExpense}
-            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-xs transition-colors cursor-pointer flex items-center gap-1.5"
+            className="px-3.5 sm:px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-xs transition-colors cursor-pointer flex items-center justify-center gap-1.5 shrink-0"
           >
             <Plus size={15} />
             <span>+ Thêm chi tiêu</span>
@@ -233,76 +233,136 @@ export const ExpensesPage: React.FC<ExpensesPageProps> = ({
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr className="bg-neutral-50/75 border-b border-neutral-200/80 text-neutral-500 font-semibold uppercase tracking-wider text-[11px]">
-                  <th className="py-3 px-4">Ngày</th>
-                  <th className="py-3 px-4">Mô tả</th>
-                  <th className="py-3 px-4">Danh mục</th>
-                  <th className="py-3 px-4">Danh mục con</th>
-                  <th className="py-3 px-4">Phương thức</th>
-                  <th className="py-3 px-4 text-right">Số tiền</th>
-                  <th className="py-3 px-4 text-center">Thao tác</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-neutral-100">
-                {transactions.map((tx) => (
-                  <tr key={tx.id} className="hover:bg-neutral-50/80 transition-colors">
-                    <td className="py-3 px-4 whitespace-nowrap text-neutral-600 font-medium tabular-nums">
-                      {formatDateVI(tx.transaction_date)}
-                    </td>
-                    <td className="py-3 px-4">
-                      <div className="font-semibold text-neutral-900">{tx.description}</div>
+          <>
+            {/* Mobile Cards View (md:hidden) */}
+            <div className="md:hidden divide-y divide-neutral-100">
+              {transactions.map((tx) => (
+                <div key={tx.id} className="p-4 space-y-2 hover:bg-neutral-50/80 transition-colors">
+                  <div className="flex items-center justify-between text-xs text-neutral-500">
+                    <span className="font-medium tabular-nums">{formatDateVI(tx.transaction_date)}</span>
+                    <span className="text-sm font-bold text-rose-600 tabular-nums">
+                      -{formatVND(tx.amount)}
+                    </span>
+                  </div>
+
+                  <div className="flex items-start gap-2.5">
+                    <CategoryIcon category={tx.category} size={16} className="mt-0.5 shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold text-neutral-900 break-words">{tx.description}</p>
+                      <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-neutral-500 mt-1">
+                        <span className="font-medium text-neutral-700">{tx.category}</span>
+                        {tx.subcategory && (
+                          <>
+                            <span aria-hidden="true">·</span>
+                            <span>{tx.subcategory}</span>
+                          </>
+                        )}
+                        <span aria-hidden="true">·</span>
+                        <span className="flex items-center gap-1">
+                          <CreditCard size={11} className="text-neutral-400 shrink-0" />
+                          <span>{tx.payment_method}</span>
+                        </span>
+                      </div>
                       {tx.note && (
-                        <div className="text-[11px] text-neutral-400 italic truncate max-w-xs">{tx.note}</div>
+                        <p className="text-[11px] text-neutral-400 italic break-words mt-1">{tx.note}</p>
                       )}
-                    </td>
-                    <td className="py-3 px-4 whitespace-nowrap">
-                      <div className="flex items-center gap-1.5">
-                        <CategoryIcon category={tx.category} size={14} className="p-1" />
-                        <span className="font-medium text-neutral-800">{tx.category}</span>
-                      </div>
-                    </td>
-                    <td className="py-3 px-4 whitespace-nowrap text-neutral-600">
-                      {tx.subcategory || '—'}
-                    </td>
-                    <td className="py-3 px-4 whitespace-nowrap text-neutral-600">
-                      <span className="flex items-center gap-1">
-                        <CreditCard size={12} className="text-neutral-400" />
-                        {tx.payment_method}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 text-right whitespace-nowrap">
-                      <span className="font-bold text-rose-600 tabular-nums">
-                        -{formatVND(tx.amount)}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 text-center whitespace-nowrap">
-                      <div className="flex items-center justify-center gap-1">
-                        <button
-                          type="button"
-                          onClick={() => onEditExpense(tx)}
-                          className="p-1.5 text-neutral-400 hover:text-neutral-800 hover:bg-neutral-100 rounded-md transition-colors cursor-pointer"
-                          title="Chỉnh sửa"
-                        >
-                          <Edit2 size={13} />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDelete(tx.id)}
-                          className="p-1.5 text-neutral-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors cursor-pointer"
-                          title="Xóa"
-                        >
-                          <Trash2 size={13} />
-                        </button>
-                      </div>
-                    </td>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-end gap-2 pt-2 border-t border-neutral-100/60">
+                    <button
+                      type="button"
+                      onClick={() => onEditExpense(tx)}
+                      className="px-2.5 py-1 text-xs text-neutral-600 hover:text-neutral-900 bg-neutral-100 hover:bg-neutral-200 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
+                    >
+                      <Edit2 size={12} />
+                      <span>Sửa</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(tx.id)}
+                      className="px-2.5 py-1 text-xs text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
+                    >
+                      <Trash2 size={12} />
+                      <span>Xóa</span>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop Table View (hidden md:block) */}
+            <div className="hidden md:block overflow-x-auto w-full max-w-full">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-neutral-50/75 border-b border-neutral-200/80 text-neutral-500 font-semibold uppercase tracking-wider text-[11px]">
+                    <th className="py-3 px-4">Ngày</th>
+                    <th className="py-3 px-4">Mô tả</th>
+                    <th className="py-3 px-4">Danh mục</th>
+                    <th className="py-3 px-4">Danh mục con</th>
+                    <th className="py-3 px-4">Phương thức</th>
+                    <th className="py-3 px-4 text-right">Số tiền</th>
+                    <th className="py-3 px-4 text-center">Thao tác</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-neutral-100">
+                  {transactions.map((tx) => (
+                    <tr key={tx.id} className="hover:bg-neutral-50/80 transition-colors">
+                      <td className="py-3 px-4 whitespace-nowrap text-neutral-600 font-medium tabular-nums">
+                        {formatDateVI(tx.transaction_date)}
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="font-semibold text-neutral-900">{tx.description}</div>
+                        {tx.note && (
+                          <div className="text-[11px] text-neutral-400 italic truncate max-w-xs">{tx.note}</div>
+                        )}
+                      </td>
+                      <td className="py-3 px-4 whitespace-nowrap">
+                        <div className="flex items-center gap-1.5">
+                          <CategoryIcon category={tx.category} size={14} className="p-1" />
+                          <span className="font-medium text-neutral-800">{tx.category}</span>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4 whitespace-nowrap text-neutral-600">
+                        {tx.subcategory || '—'}
+                      </td>
+                      <td className="py-3 px-4 whitespace-nowrap text-neutral-600">
+                        <span className="flex items-center gap-1">
+                          <CreditCard size={12} className="text-neutral-400" />
+                          {tx.payment_method}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-right whitespace-nowrap">
+                        <span className="font-bold text-rose-600 tabular-nums">
+                          -{formatVND(tx.amount)}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-center whitespace-nowrap">
+                        <div className="flex items-center justify-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => onEditExpense(tx)}
+                            className="p-1.5 text-neutral-400 hover:text-neutral-800 hover:bg-neutral-100 rounded-md transition-colors cursor-pointer"
+                            title="Chỉnh sửa"
+                          >
+                            <Edit2 size={13} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(tx.id)}
+                            className="p-1.5 text-neutral-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors cursor-pointer"
+                            title="Xóa"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
     </div>

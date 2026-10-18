@@ -50,9 +50,9 @@ export const MonthSelector: React.FC<MonthSelectorProps> = ({ month, year, onCha
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center gap-2 px-3 py-1 text-sm font-semibold text-neutral-900 hover:bg-neutral-100 rounded-lg transition-colors cursor-pointer tabular-nums whitespace-nowrap"
+          className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 text-xs sm:text-sm font-semibold text-neutral-900 hover:bg-neutral-100 rounded-lg transition-colors cursor-pointer tabular-nums whitespace-nowrap"
         >
-          <Calendar size={15} className="text-emerald-600 shrink-0" />
+          <Calendar size={14} className="text-emerald-600 shrink-0" />
           <span>{formatMonthYearVI(month, year)}</span>
         </button>
 
@@ -60,9 +60,9 @@ export const MonthSelector: React.FC<MonthSelectorProps> = ({ month, year, onCha
           type="button"
           onClick={handleNext}
           title="Tháng sau"
-          className="p-1.5 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-colors cursor-pointer"
+          className="p-1 sm:p-1.5 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-colors cursor-pointer"
         >
-          <ChevronRight size={18} />
+          <ChevronRight size={16} />
         </button>
       </div>
 
@@ -71,10 +71,10 @@ export const MonthSelector: React.FC<MonthSelectorProps> = ({ month, year, onCha
           type="button"
           onClick={handleResetToCurrent}
           title="Về tháng hiện tại"
-          className="ml-2 flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors cursor-pointer border border-emerald-200/60"
+          className="ml-1 sm:ml-2 flex items-center gap-1 px-2 py-1 sm:px-2.5 sm:py-1.5 text-[11px] sm:text-xs font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors cursor-pointer border border-emerald-200/60"
         >
-          <RotateCcw size={13} />
-          <span className="hidden sm:inline">Hiện tại</span>
+          <RotateCcw size={12} />
+          <span className="hidden md:inline">Hiện tại</span>
         </button>
       )}
 
@@ -85,7 +85,7 @@ export const MonthSelector: React.FC<MonthSelectorProps> = ({ month, year, onCha
             className="fixed inset-0 z-40"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute top-full left-0 mt-2 z-50 w-72 p-3 bg-white border border-neutral-200 rounded-xl shadow-xl">
+          <div className="absolute top-full right-0 sm:right-auto sm:left-0 mt-2 z-50 w-72 max-w-[calc(100vw-2rem)] p-3 bg-white border border-neutral-200 rounded-xl shadow-xl">
             <div className="flex items-center justify-between pb-2 mb-2 border-b border-neutral-100">
               <span className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">
                 Chọn năm: {year}

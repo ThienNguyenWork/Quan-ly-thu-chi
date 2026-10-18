@@ -35,22 +35,23 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header className="h-16 bg-white border-b border-neutral-200/80 px-4 sm:px-6 flex items-center justify-between sticky top-0 z-20 shadow-2xs">
       {/* Zone 1: Mobile menu toggle + Page title */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0 mr-2">
         <button
           type="button"
           onClick={onOpenMobileMenu}
-          className="lg:hidden p-2 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-colors cursor-pointer"
+          aria-label="Mở menu"
+          className="lg:hidden p-1.5 sm:p-2 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-colors cursor-pointer shrink-0"
         >
           <Menu size={20} />
         </button>
 
-        <h1 className="text-base sm:text-lg font-bold text-neutral-900 tracking-tight whitespace-nowrap">
+        <h1 className="text-sm sm:text-lg font-bold text-neutral-900 tracking-tight truncate">
           {TAB_TITLES[currentTab]}
         </h1>
       </div>
 
       {/* Zone 2: Month selector (Center / Adaptive) */}
-      <div className="flex items-center">
+      <div className="flex items-center shrink-0">
         <MonthSelector
           month={month}
           year={year}

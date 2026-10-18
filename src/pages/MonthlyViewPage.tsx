@@ -93,7 +93,7 @@ export const MonthlyViewPage: React.FC<MonthlyViewPageProps> = ({
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
           {/* Year select */}
           <select
             value={year}
@@ -129,7 +129,7 @@ export const MonthlyViewPage: React.FC<MonthlyViewPageProps> = ({
             <span className="font-semibold uppercase tracking-wider">Tổng thu nhập</span>
             <ArrowUpRight size={16} className="text-emerald-600" />
           </div>
-          <div className="text-2xl font-bold text-neutral-900 tabular-nums">
+          <div className="text-xl sm:text-2xl font-bold text-neutral-900 tabular-nums truncate">
             {formatVND(stats.totalIncome)}
           </div>
           <div className="text-[11px] text-neutral-400 mt-2">
@@ -142,7 +142,7 @@ export const MonthlyViewPage: React.FC<MonthlyViewPageProps> = ({
             <span className="font-semibold uppercase tracking-wider">Tổng chi tiêu</span>
             <ArrowDownRight size={16} className="text-rose-600" />
           </div>
-          <div className="text-2xl font-bold text-neutral-900 tabular-nums">
+          <div className="text-xl sm:text-2xl font-bold text-neutral-900 tabular-nums truncate">
             {formatVND(stats.totalExpense)}
           </div>
           <div className="text-[11px] text-neutral-400 mt-2">
@@ -155,7 +155,7 @@ export const MonthlyViewPage: React.FC<MonthlyViewPageProps> = ({
             <span className="font-semibold uppercase tracking-wider">Số dư còn lại</span>
             <Wallet size={16} className="text-sky-600" />
           </div>
-          <div className={`text-2xl font-bold tabular-nums ${stats.remainingBalance < 0 ? 'text-amber-600' : 'text-neutral-900'}`}>
+          <div className={`text-xl sm:text-2xl font-bold tabular-nums truncate ${stats.remainingBalance < 0 ? 'text-amber-600' : 'text-neutral-900'}`}>
             {formatVND(stats.remainingBalance)}
           </div>
           <div className="text-[11px] text-neutral-400 mt-2">
@@ -168,7 +168,7 @@ export const MonthlyViewPage: React.FC<MonthlyViewPageProps> = ({
             <span className="font-semibold uppercase tracking-wider">Tổng giao dịch</span>
             <Receipt size={16} className="text-neutral-600" />
           </div>
-          <div className="text-2xl font-bold text-neutral-900 tabular-nums">
+          <div className="text-xl sm:text-2xl font-bold text-neutral-900 tabular-nums truncate">
             {stats.transactionCount}
           </div>
           <div className="text-[11px] text-neutral-400 mt-2">
@@ -205,18 +205,18 @@ export const MonthlyViewPage: React.FC<MonthlyViewPageProps> = ({
             <div className="space-y-3">
               {topCategories.map((item, idx) => (
                 <div key={item.category} className="flex items-center justify-between p-2.5 rounded-lg border border-neutral-100 bg-neutral-50/50">
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs font-bold text-neutral-400 w-4 text-center">
+                  <div className="flex items-center gap-2.5 min-w-0 mr-2">
+                    <span className="text-xs font-bold text-neutral-400 w-4 text-center shrink-0">
                       #{idx + 1}
                     </span>
-                    <CategoryIcon category={item.category} size={16} />
-                    <div>
-                      <p className="text-xs font-bold text-neutral-900">{item.category}</p>
+                    <CategoryIcon category={item.category} size={16} className="shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-xs font-bold text-neutral-900 truncate">{item.category}</p>
                       <p className="text-[11px] text-neutral-400">{item.count} khoản chi ({item.percentage}%)</p>
                     </div>
                   </div>
 
-                  <span className="text-xs font-bold text-neutral-900 tabular-nums">
+                  <span className="text-xs font-bold text-neutral-900 tabular-nums shrink-0 whitespace-nowrap">
                     {formatVND(item.amount)}
                   </span>
                 </div>
@@ -245,14 +245,14 @@ export const MonthlyViewPage: React.FC<MonthlyViewPageProps> = ({
           <div className="divide-y divide-neutral-100 max-h-96 overflow-y-auto">
             {dailyGroups.map((group) => (
               <div key={group.date} className="p-4 flex items-center justify-between hover:bg-neutral-50 transition-colors">
-                <div>
+                <div className="min-w-0 mr-3">
                   <p className="text-xs font-bold text-neutral-800">{group.formattedDate}</p>
-                  <p className="text-[11px] text-neutral-400 mt-0.5">
+                  <p className="text-[11px] text-neutral-400 mt-0.5 line-clamp-1 truncate">
                     {group.transactions.map((t) => t.description).join(', ')}
                   </p>
                 </div>
-                <div className="text-right">
-                  <span className="text-xs font-bold text-rose-600 tabular-nums">
+                <div className="text-right shrink-0">
+                  <span className="text-xs font-bold text-rose-600 tabular-nums whitespace-nowrap">
                     -{formatVND(group.totalAmount)}
                   </span>
                   <span className="block text-[10px] text-neutral-400">
