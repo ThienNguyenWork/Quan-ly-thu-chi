@@ -147,3 +147,49 @@ drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
+
+-- ==============================================================================
+-- 7. BẢNG SỔ TIẾT KIỆM (savings_books) & GIAO DỊCH (savings_transactions)
+-- ==============================================================================
+create table if not exists public.savings_books (
+  id text primary key,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  bank_code text not null,
+  bank_name text not null,
+  account_name text not null,
+  account_number text,
+  initial_deposit numeric not null check (initial_deposit >= 0),
+  current_balance numeric not null check (current_balance >= 0),
+  interest_rate numeric,
+  start_date date not null default current_date,
+  status text not null default 'active' check (status in ('active', 'matured', 'settled')),
+  total_interest_received numeric not null default 0,
+  note text,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table public.savings_books enable row level security;
+
+create policy "Users can manage own savings books"
+  on public.savings_books for all
+  using (auth.uid() = user_id);
+
+create table if not exists public.savings_transactions (
+  id text primary key,
+  book_id text not null references public.savings_books(id) on delete cascade,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  type text not null check (type in ('deposit', 'withdraw', 'interest', 'settlement')),
+  amount numeric not null check (amount >= 0),
+  transaction_date date not null default current_date,
+  note text,
+  added_to_balance boolean default false,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table public.savings_transactions enable row level security;
+
+create policy "Users can manage own savings transactions"
+  on public.savings_transactions for all
+  using (auth.uid() = user_id);
+

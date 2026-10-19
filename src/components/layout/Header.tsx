@@ -17,6 +17,7 @@ const TAB_TITLES: Record<NavTab, string> = {
   dashboard: 'Tổng quan tài chính',
   expenses: 'Lịch sử chi tiêu',
   income: 'Quản lý thu nhập',
+  savings: 'Sổ tiết kiệm ngân hàng',
   monthly: 'Chi tiêu theo tháng',
   yearly: 'Chi tiêu theo năm',
   categories: 'Danh mục chi tiêu',

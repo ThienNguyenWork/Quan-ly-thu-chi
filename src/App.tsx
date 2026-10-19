@@ -16,6 +16,7 @@ import { MonthlyViewPage } from './pages/MonthlyViewPage';
 import { YearlyViewPage } from './pages/YearlyViewPage';
 import { CategoriesPage } from './pages/CategoriesPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { SavingsPage } from './pages/SavingsPage';
 import { ExpenseModal } from './components/modals/ExpenseModal';
 import { IncomeModal } from './components/modals/IncomeModal';
 import { Transaction } from './types/finance';
@@ -253,6 +254,10 @@ function MainApp() {
               selectedMonth={selectedMonth}
               selectedYear={selectedYear}
             />
+          )}
+
+          {currentTab === 'savings' && (
+            <SavingsPage />
           )}
 
           {currentTab === 'monthly' && (

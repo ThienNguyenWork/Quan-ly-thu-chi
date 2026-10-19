@@ -12,6 +12,7 @@ import {
   CheckCircle2,
   LogOut,
   Wallet,
+  PiggyBank,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -19,6 +20,7 @@ export type NavTab =
   | 'dashboard'
   | 'expenses'
   | 'income'
+  | 'savings'
   | 'monthly'
   | 'yearly'
   | 'categories'
@@ -43,6 +45,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'dashboard', label: 'Tổng quan', icon: LayoutDashboard },
     { id: 'expenses', label: 'Chi tiêu', icon: Receipt },
     { id: 'income', label: 'Thu nhập', icon: TrendingUp },
+    { id: 'savings', label: 'Sổ tiết kiệm', icon: PiggyBank },
     { id: 'monthly', label: 'Theo tháng', icon: CalendarDays },
     { id: 'yearly', label: 'Theo năm', icon: BarChart3 },
     { id: 'categories', label: 'Danh mục', icon: Layers },

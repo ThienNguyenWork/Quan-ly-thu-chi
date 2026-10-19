@@ -10,6 +10,7 @@ import {
   X,
   Plus,
   Wallet,
+  PiggyBank,
 } from 'lucide-react';
 import { NavTab } from './Sidebar';
 import { useAuth } from '../../context/AuthContext';
@@ -37,6 +38,7 @@ export const MobileNav: React.FC<MobileNavProps> = ({
     { id: 'dashboard', label: 'Tổng quan', icon: LayoutDashboard },
     { id: 'expenses', label: 'Chi tiêu', icon: Receipt },
     { id: 'income', label: 'Thu nhập', icon: TrendingUp },
+    { id: 'savings', label: 'Sổ tiết kiệm', icon: PiggyBank },
     { id: 'monthly', label: 'Theo tháng', icon: CalendarDays },
     { id: 'yearly', label: 'Theo năm', icon: BarChart3 },
     { id: 'categories', label: 'Danh mục', icon: Layers },
